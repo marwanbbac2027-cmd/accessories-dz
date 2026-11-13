@@ -108,16 +108,13 @@ test('coupon validation rejects bad input', async () => {
   assert.equal(short.status, 400);
 });
 
-test('more than 3 orders per phone in 24 hours is refused', async () => {
+test('the same phone can place several orders (no daily limit)', async () => {
   const p = await createApproved({ stock: 50 });
   const phone = '0770000003';
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 5; i++) {
     const r = await placeOrder(orderBody(p.id, phone));
     assert.equal(r.status, 201, JSON.stringify(r.data));
   }
-  const fourth = await placeOrder(orderBody(p.id, phone));
-  assert.equal(fourth.status, 400);
-  assert.equal(fourth.data.field, 'phone');
 });
 
 test('cancelling an order restores stock; reopening a closed order is refused', async () => {

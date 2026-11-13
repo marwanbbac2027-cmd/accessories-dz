@@ -35,7 +35,6 @@ A seller submits a product at `#sell`. It stays hidden until approved. The selle
 
 ### Limits and privacy
 
-- Each phone number can place at most 3 orders in 24 hours (cancelled and rejected orders are not counted).
 - Legal pages `privacy.html` and `terms.html` are drafts. Review them before relying on them.
 - Delivery fees in `lib/data.js` are placeholders. Set real fees per wilaya.
 
