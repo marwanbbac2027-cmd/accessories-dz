@@ -7,6 +7,7 @@ const crypto = require('node:crypto');
 const { openDatabase } = require('./lib/db');
 const orders = require('./lib/orders');
 const listings = require('./lib/listings');
+const admin = require('./lib/admin');
 
 const PORT = Number(process.env.PORT) || 3000;
 const DB_FILE = process.env.DB_FILE || path.join(__dirname, 'data', 'accessories-dz.db');
@@ -56,6 +57,8 @@ const trackLimiter = createLimiter(RATE_MAX * 2, TEN_MIN);
 const contactLimiter = createLimiter(RATE_MAX, TEN_MIN);
 const messageLimiter = createLimiter(RATE_MAX, TEN_MIN);
 const listingLimiter = createLimiter(Math.max(3, Math.floor(RATE_MAX / 3)), 60 * 60 * 1000);
+const manageLimiter = createLimiter(RATE_MAX * 10, TEN_MIN);
+const visitLimiter = createLimiter(RATE_MAX * 30, TEN_MIN);
 
 function clientIp(req) {
   // Behind a proxy (Railway/Render), trust the first forwarded address.
@@ -114,15 +117,15 @@ function whatsappNumber(phone) {
   return phone ? '213' + phone.slice(1) : '';
 }
 
-function createServer(db) {
+function createServer(db, options = {}) {
+  const dbFile = options.dbFile || DB_FILE;
   const getCategories = db.prepare('SELECT id, slug, name_ar, name_fr FROM categories ORDER BY id');
   const getProducts = db.prepare(`SELECT p.id, p.sku, p.name_ar, p.name_fr, p.desc_ar, p.desc_fr,
       p.price, p.discount_price, p.stock, p.tone, p.seller_name, p.seller_phone,
       (p.image_mime IS NOT NULL) AS has_image, c.slug AS category
     FROM products p JOIN categories c ON c.id = p.category_id
     WHERE p.is_active = 1 AND p.status = 'approved' ORDER BY p.id DESC`);
-  const getWilayas = db.prepare('SELECT code, name_ar, name_fr FROM wilayas WHERE is_active = 1 ORDER BY code');
-  const cachedWilayas = getWilayas.all();
+  const cachedWilayas = db.prepare('SELECT code, name_ar, name_fr FROM wilayas WHERE is_active = 1 ORDER BY code').all();
 
   function publicProducts() {
     return getProducts.all().map(({ has_image, ...p }) => ({
@@ -130,6 +133,105 @@ function createServer(db) {
       image_url: has_image ? `/api/products/${p.id}/image` : null,
       seller_wa: whatsappNumber(p.seller_phone),
     }));
+  }
+
+  function storeInfo() {
+    // Contact details come from environment variables, so they can change without code edits.
+    const httpsOnly = (v) => (typeof v === 'string' && /^https:\/\/[^\s]+$/.test(v) ? v : '');
+    return {
+      whatsapp: process.env.STORE_WHATSAPP || '',
+      phone: process.env.STORE_PHONE || '',
+      social: {
+        facebook: httpsOnly(process.env.STORE_FACEBOOK),
+        instagram: httpsOnly(process.env.STORE_INSTAGRAM),
+        tiktok: httpsOnly(process.env.STORE_TIKTOK),
+      },
+    };
+  }
+
+  async function handleAdmin(req, res, url) {
+    const { pathname } = url;
+    if (!ADMIN_TOKEN) return send(res, 404, { error: 'غير موجود.' });
+    if (!adminAuthorized(req)) return send(res, 401, { error: 'غير مصرح.' });
+
+    if (req.method === 'GET' && pathname === '/api/admin/orders') {
+      return send(res, 200, { orders: admin.listOrders(db, {
+        status: url.searchParams.get('status') || '',
+        q: url.searchParams.get('q') || '',
+      }) });
+    }
+    const orderMatch = /^\/api\/admin\/orders\/(\d+)(\/status|\/notes)?$/.exec(pathname);
+    if (orderMatch) {
+      const id = Number(orderMatch[1]);
+      const action = orderMatch[2];
+      if (req.method === 'GET' && !action) return send(res, 200, { order: admin.orderDetail(db, id) });
+      if (req.method === 'POST' && action === '/status') {
+        const body = await readJson(req);
+        return send(res, 200, admin.setOrderStatus(db, id, body.status));
+      }
+      if (req.method === 'POST' && action === '/notes') {
+        const body = await readJson(req);
+        return send(res, 200, admin.setOrderNotes(db, id, body.notes));
+      }
+    }
+
+    if (req.method === 'GET' && pathname === '/api/admin/listings') {
+      return send(res, 200, { listings: listings.adminListListings(db, url.searchParams.get('status')) });
+    }
+    const adminImg = /^\/api\/admin\/listings\/(\d+)\/image$/.exec(pathname);
+    if (req.method === 'GET' && adminImg) {
+      const img = listings.getImage(db, Number(adminImg[1]), false);
+      if (!img) return send(res, 404, { error: 'غير موجود.' });
+      return send(res, 200, img.data, { 'Content-Type': img.mime });
+    }
+    const adminStatus = /^\/api\/admin\/listings\/(\d+)\/status$/.exec(pathname);
+    if (req.method === 'POST' && adminStatus) {
+      const body = await readJson(req);
+      return send(res, 200, listings.setListingStatus(db, Number(adminStatus[1]), body.status));
+    }
+
+    const productMatch = /^\/api\/admin\/products\/(\d+)$/.exec(pathname);
+    if (productMatch) {
+      const id = Number(productMatch[1]);
+      if (req.method === 'PATCH') {
+        const body = await readJson(req);
+        return send(res, 200, listings.adminUpdateProduct(db, id, body));
+      }
+      if (req.method === 'DELETE') return send(res, 200, listings.adminDeleteProduct(db, id));
+    }
+
+    if (req.method === 'GET' && pathname === '/api/admin/coupons') {
+      return send(res, 200, { coupons: admin.listCoupons(db) });
+    }
+    if (req.method === 'POST' && pathname === '/api/admin/coupons') {
+      const body = await readJson(req);
+      return send(res, 201, admin.createCoupon(db, body));
+    }
+    const couponMatch = /^\/api\/admin\/coupons\/(\d+)\/active$/.exec(pathname);
+    if (req.method === 'POST' && couponMatch) {
+      const body = await readJson(req);
+      return send(res, 200, admin.setCouponActive(db, Number(couponMatch[1]), body.active));
+    }
+
+    if (req.method === 'GET' && pathname === '/api/admin/stats') {
+      return send(res, 200, admin.stats(db));
+    }
+    if (req.method === 'GET' && pathname === '/api/admin/messages') {
+      return send(res, 200, { messages: listings.listMessages(db) });
+    }
+    if (req.method === 'GET' && pathname === '/api/admin/backup') {
+      if (!dbFile || dbFile === ':memory:' || !fs.existsSync(dbFile)) return send(res, 404, { error: 'غير موجود.' });
+      // Fold the write-ahead log into the main file so the copy is complete.
+      db.exec('PRAGMA wal_checkpoint(TRUNCATE)');
+      const data = fs.readFileSync(dbFile);
+      const stamp = new Date().toISOString().slice(0, 10);
+      return send(res, 200, data, {
+        'Content-Type': 'application/octet-stream',
+        'Content-Disposition': `attachment; filename="accessories-dz-${stamp}.db"`,
+      });
+    }
+
+    return send(res, 404, { error: 'غير موجود.' });
   }
 
   async function handleApi(req, res, url) {
@@ -146,17 +248,7 @@ function createServer(db) {
       return send(res, 200, { wilayas: cachedWilayas });
     }
     if (req.method === 'GET' && pathname === '/api/store') {
-      // Contact details come from environment variables, so they can change without code edits.
-      const httpsOnly = (v) => (typeof v === 'string' && /^https:\/\/[^\s]+$/.test(v) ? v : '');
-      return send(res, 200, {
-        whatsapp: process.env.STORE_WHATSAPP || '',
-        phone: process.env.STORE_PHONE || '',
-        social: {
-          facebook: httpsOnly(process.env.STORE_FACEBOOK),
-          instagram: httpsOnly(process.env.STORE_INSTAGRAM),
-          tiktok: httpsOnly(process.env.STORE_TIKTOK),
-        },
-      });
+      return send(res, 200, storeInfo());
     }
     if (req.method === 'GET' && pathname === '/api/delivery') {
       const code = Number(url.searchParams.get('wilaya'));
@@ -165,15 +257,19 @@ function createServer(db) {
       }
       return send(res, 200, { options: orders.getActiveDeliveryOptions(db, code) });
     }
+    if (req.method === 'GET' && pathname === '/api/coupons/check') {
+      return send(res, 200, orders.checkCoupon(db, url.searchParams.get('code') || ''));
+    }
+    if (req.method === 'POST' && pathname === '/api/visit') {
+      if (visitLimiter(ip)) admin.recordVisit(db);
+      return send(res, 204, '');
+    }
 
     const imgMatch = /^\/api\/products\/(\d+)\/image$/.exec(pathname);
     if (req.method === 'GET' && imgMatch) {
       const img = listings.getImage(db, Number(imgMatch[1]), true);
       if (!img) return send(res, 404, { error: 'غير موجود.' });
-      return send(res, 200, img.data, {
-        'Content-Type': img.mime,
-        'Cache-Control': 'public, max-age=3600',
-      });
+      return send(res, 200, img.data, { 'Content-Type': img.mime, 'Cache-Control': 'public, max-age=3600' });
     }
 
     const msgMatch = /^\/api\/products\/(\d+)\/messages$/.exec(pathname);
@@ -181,13 +277,25 @@ function createServer(db) {
       if (!messageLimiter(ip)) return send(res, 429, { error: 'محاولات كثيرة. حاول لاحقا.' });
       const body = await readJson(req);
       listings.createMessage(db, Number(msgMatch[1]), body);
+      admin.notify(`رسالة جديدة لمنتج رقم ${msgMatch[1]}\nالاسم: ${body.name}\nالهاتف: ${body.phone}\n${body.message}`);
       return send(res, 201, { ok: true });
+    }
+
+    const manageMatch = /^\/api\/manage\/([A-Za-z0-9_-]{20,80})$/.exec(pathname);
+    if (manageMatch) {
+      if (!manageLimiter(ip)) return send(res, 429, { error: 'محاولات كثيرة. حاول لاحقا.' });
+      if (req.method === 'GET') return send(res, 200, { listing: listings.getOwnListing(db, manageMatch[1]) });
+      if (req.method === 'PATCH') {
+        const body = await readJson(req);
+        return send(res, 200, { listing: listings.updateOwnListing(db, manageMatch[1], body) });
+      }
     }
 
     if (req.method === 'POST' && pathname === '/api/listings') {
       if (!listingLimiter(ip)) return send(res, 429, { error: 'محاولات كثيرة. حاول لاحقا.' });
       const body = await readJson(req, MAX_UPLOAD_BODY);
       const result = listings.createListing(db, body);
+      admin.notify(`منتج جديد بانتظار المراجعة\n${body.title || ''}\nالبائع: ${body.seller_name || ''} ${body.seller_phone || ''}`);
       return send(res, 201, result);
     }
 
@@ -196,6 +304,9 @@ function createServer(db) {
       const body = await readJson(req);
       const key = req.headers['idempotency-key'];
       const result = orders.placeOrder(db, body, typeof key === 'string' ? key : '');
+      if (!result.duplicate) {
+        admin.notify(`طلب جديد ${result.reference}\n${result.customer} — ولاية ${result.wilaya}\nالمجموع: ${result.total} دج`);
+      }
       return send(res, result.duplicate ? 200 : 201, {
         reference: result.reference,
         status: result.status,
@@ -216,31 +327,11 @@ function createServer(db) {
       if (!contactLimiter(ip)) return send(res, 429, { error: 'محاولات كثيرة. حاول لاحقا.' });
       const body = await readJson(req);
       orders.saveContactMessage(db, body);
+      admin.notify(`رسالة من الموقع\n${body.name} ${body.phone}\n${body.message}`);
       return send(res, 201, { ok: true });
     }
 
-    if (pathname.startsWith('/api/admin/')) {
-      if (!ADMIN_TOKEN) return send(res, 404, { error: 'غير موجود.' });
-      if (!adminAuthorized(req)) return send(res, 401, { error: 'غير مصرح.' });
-
-      if (req.method === 'GET' && pathname === '/api/admin/listings') {
-        return send(res, 200, { listings: listings.adminListListings(db, url.searchParams.get('status')) });
-      }
-      const adminImg = /^\/api\/admin\/listings\/(\d+)\/image$/.exec(pathname);
-      if (req.method === 'GET' && adminImg) {
-        const img = listings.getImage(db, Number(adminImg[1]), false);
-        if (!img) return send(res, 404, { error: 'غير موجود.' });
-        return send(res, 200, img.data, { 'Content-Type': img.mime });
-      }
-      const adminStatus = /^\/api\/admin\/listings\/(\d+)\/status$/.exec(pathname);
-      if (req.method === 'POST' && adminStatus) {
-        const body = await readJson(req);
-        return send(res, 200, listings.setListingStatus(db, Number(adminStatus[1]), body.status));
-      }
-      if (req.method === 'GET' && pathname === '/api/admin/messages') {
-        return send(res, 200, { messages: listings.listMessages(db) });
-      }
-    }
+    if (pathname.startsWith('/api/admin/')) return handleAdmin(req, res, url);
 
     return send(res, 404, { error: 'غير موجود.' });
   }
@@ -266,6 +357,7 @@ function createServer(db) {
       if (err instanceof orders.ValidationError) {
         return send(res, 400, { error: err.message, field: err.field });
       }
+      if (err && err.publicMessage) return send(res, err.status || 400, { error: err.publicMessage });
       if (err && err.status === 404) return send(res, 404, { error: 'غير موجود.' });
       if (err && err.status) return send(res, err.status, { error: 'طلب غير صالح.' });
       // Log server-side; never leak internals to the client.
@@ -277,7 +369,7 @@ function createServer(db) {
 
 if (require.main === module) {
   const db = openDatabase(DB_FILE);
-  createServer(db).listen(PORT, () => {
+  createServer(db, { dbFile: DB_FILE }).listen(PORT, () => {
     console.log(`ACCESSORIES DZ running on http://localhost:${PORT}`);
     if (!ADMIN_TOKEN) console.log('Admin disabled: set ADMIN_TOKEN to enable /admin.html');
   });

@@ -122,6 +122,13 @@
         </div>
         <button class="btn btn-primary" type="submit" id="sellBtn" data-i18n="sellBtn">إرسال المنتج للمراجعة</button>
         <p class="form-msg" id="sellMsg" role="status"></p>
+        <div class="manage-box" id="manageBox" hidden>
+          <p class="small" data-i18n="manageNote">احفظ هذا الرابط. به تعدّل السعر والكمية لاحقًا، ولن يُعرض مرة أخرى:</p>
+          <div class="coupon-row">
+            <input id="manageLink" readonly dir="ltr">
+            <button class="btn" type="button" id="copyManage" data-i18n="copyLink">نسخ</button>
+          </div>
+        </div>
       </form>
     </div>
   </section>
@@ -175,8 +182,8 @@
     </div>
     <nav aria-label="social" class="socials small" id="socialLinks"></nav>
     <nav aria-label="legal" class="small">
-      <a href="#" data-i18n="privacy">سياسة الخصوصية</a>
-      <a href="#" data-i18n="terms">الشروط والأحكام</a>
+      <a href="privacy.html" data-i18n="privacy">سياسة الخصوصية</a>
+      <a href="terms.html" data-i18n="terms">الشروط والأحكام</a>
     </nav>
     <p class="small muted">&copy; <span id="year"></span> ACCESSORIES DZ</p>
   </div>
@@ -236,12 +243,21 @@
         <p class="form-msg" id="deliveryMsg" role="status"></p>
       </fieldset>
 
+      <label><span data-i18n="couponLabel">كود الخصم (اختياري)</span>
+        <div class="coupon-row">
+          <input name="couponCode" id="couponInput" maxlength="20" autocomplete="off" style="text-transform:uppercase">
+          <button class="btn" type="button" id="applyCoupon" data-i18n="applyCoupon">تطبيق</button>
+        </div>
+        <p class="form-msg" id="couponMsg" role="status"></p>
+      </label>
+
       <label><span data-i18n="notesLabel">ملاحظات (اختياري)</span>
         <textarea name="notes" maxlength="500" rows="3"></textarea>
       </label>
 
       <div class="totals">
         <div class="sum-row"><span data-i18n="productsTotal">سعر المنتجات</span><span id="tProducts">0 DA</span></div>
+        <div class="sum-row" id="discountRow" hidden><span data-i18n="discountTotal">الخصم</span><span id="tDiscount">0 DA</span></div>
         <div class="sum-row"><span data-i18n="deliveryTotal">سعر التوصيل</span><span id="tDelivery">—</span></div>
         <div class="sum-row grand"><span data-i18n="grandTotal">المجموع</span><strong id="tGrand">0 DA</strong></div>
         <p class="muted small" data-i18n="codNote">الدفع نقدا عند استلام الطلب.</p>
@@ -249,6 +265,7 @@
 
       <button class="btn btn-primary btn-block" type="submit" id="submitBtn" data-i18n="placeOrder">تأكيد الطلب</button>
       <p class="form-msg" id="orderMsg" role="alert"></p>
+      <button class="btn btn-block" type="button" id="waOrderBtn" hidden data-i18n="orderWhatsapp">اطلب عبر واتساب</button>
     </form>
   </div>
 </section>

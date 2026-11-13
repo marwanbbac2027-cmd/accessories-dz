@@ -359,3 +359,20 @@ dialog#contactDialog .contact-quick { margin-bottom: 14px; }
 .socials a { font-weight: 700; text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 2px; }
 .site-footer .socials a { color: var(--brass); }
 dialog#contactDialog .socials { margin-top: -4px; }
+
+/* Coupon field, manage link, and WhatsApp order button */
+.coupon-row { display: flex; gap: 8px; align-items: center; }
+.coupon-row input { flex: 1; min-width: 0; padding: 12px 14px; border: 1px solid var(--line, #d9d4c7); border-radius: 12px; font: inherit; background: #fff; }
+.coupon-row .btn { width: auto; white-space: nowrap; }
+.manage-box { margin-top: 12px; padding: 14px; border: 1px dashed var(--brass, #b8914a); border-radius: 14px; background: #fffaf0; display: grid; gap: 8px; }
+.manage-box p { margin: 0; }
+#waOrderBtn { margin-top: 8px; background: #25d366; color: #fff; border-color: #25d366; }
+#discountRow span:last-child { color: #1b7f3b; font-weight: 700; }
+
+/* Admin tables and seller manage page */
+.admin-table { width: 100%; border-collapse: collapse; font-size: 15px; margin-top: 8px; }
+.admin-table th, .admin-table td { padding: 8px 6px; border-bottom: 1px solid var(--line, #e6e0d2); text-align: start; }
+.acard label { display: grid; gap: 4px; font-weight: 600; font-size: 14px; }
+.acard input, .acard select, .acard textarea { min-height: 42px; border-radius: 10px; border: 1px solid #d6cfbf; padding: 6px 10px; font: inherit; background: #fff; }
+.legal { max-width: 760px; margin: 0 auto; padding: 32px 16px 60px; line-height: 1.9; }
+.legal h1 { margin-bottom: 8px; }

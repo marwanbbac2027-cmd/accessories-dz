@@ -89,7 +89,21 @@
   });
 
   // ---------- State ----------
+  Object.assign(T.ar, {
+    couponLabel: 'كود الخصم (اختياري)', applyCoupon: 'تطبيق', discountTotal: 'الخصم',
+    couponOk: 'الكود صالح. سيُطبَّق الخصم عند تأكيد الطلب.', couponBad: 'كود الخصم غير صالح أو منتهي.',
+    orderWhatsapp: 'اطلب عبر واتساب', waIntro: 'مرحبًا، أريد أن أطلب:', waTotal: 'المجموع',
+    manageNote: 'احفظ هذا الرابط. من خلاله تعدّل السعر والكمية لاحقًا، ولن يُعرض مرة أخرى:', copyLink: 'نسخ',
+  });
+  Object.assign(T.fr, {
+    couponLabel: 'Code promo (facultatif)', applyCoupon: 'Appliquer', discountTotal: 'Remise',
+    couponOk: 'Code valide. La remise sera appliquée à la commande.', couponBad: 'Code promo invalide ou expiré.',
+    orderWhatsapp: 'Commander via WhatsApp', waIntro: 'Bonjour, je souhaite commander :', waTotal: 'Total',
+    manageNote: 'Gardez ce lien. Il vous permet de modifier le prix et la quantité plus tard. Il ne sera plus affiché :', copyLink: 'Copier',
+  });
+
   const state = {
+    coupon: null,
     lang: 'ar',
     products: [],
     categories: [],
@@ -453,6 +467,61 @@
     if (current) sel.value = current;
   }
 
+  // Coupon preview only. The server checks and applies the real discount on submit.
+  async function applyCoupon() {
+    const input = $('#couponInput');
+    const msg = $('#couponMsg');
+    const code = (input.value || '').trim().toUpperCase();
+    state.coupon = null;
+    msg.className = 'form-msg';
+    msg.textContent = '';
+    if (code) {
+      try {
+        const r = await api(`/api/coupons/check?code=${encodeURIComponent(code)}`);
+        if (r.valid) {
+          state.coupon = { code, kind: r.kind, value: r.value };
+          msg.className = 'form-msg ok';
+          msg.textContent = t('couponOk');
+        } else {
+          msg.className = 'form-msg error';
+          msg.textContent = t('couponBad');
+        }
+      } catch {
+        msg.className = 'form-msg error';
+        msg.textContent = t('errNetwork');
+      }
+    }
+    updateSummary();
+  }
+
+  function couponDiscount(subtotal) {
+    const c = state.coupon;
+    if (!c) return 0;
+    return c.kind === 'percent' ? Math.floor((subtotal * c.value) / 100) : Math.min(c.value, subtotal);
+  }
+
+  // Alternative to the form: sends the cart to the store's WhatsApp. Such orders are not stored on the site.
+  function whatsappOrder() {
+    const digits = (state.store.whatsapp || '').replace(/\D/g, '');
+    if (!digits || state.cart.size === 0) return;
+    const fd = new FormData($('#orderForm'));
+    const lines = [...state.cart]
+      .map(([id, qty]) => { const p = productById(id); return p ? `- ${prodName(p)} × ${qty}` : null; })
+      .filter(Boolean);
+    const wil = $('#wilayaSelect').selectedOptions[0];
+    const address = [fd.get('commune'), fd.get('address')].filter(Boolean).join(' - ');
+    const text = [
+      t('waIntro'),
+      ...lines,
+      `${t('waTotal')}: ${$('#tGrand').textContent.replace(/[\u2066\u2069]/g, '')}`,
+      '',
+      [fd.get('name'), fd.get('phone')].filter(Boolean).join(' '),
+      wil && wil.value ? wil.textContent : '',
+      address,
+    ].filter((x) => x !== '').join('\n');
+    window.open(`https://wa.me/${digits}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+  }
+
   // Fee display is informational; the server recalculates the real fee on submit.
   let deliveryOptions = null;
   async function loadDelivery(code) {
@@ -493,8 +562,13 @@
     const method = selectedMethod();
     const opt = deliveryOptions ? deliveryOptions.find((o) => o.method === method) : null;
     const fee = opt ? opt.fee : null;
+    const discount = couponDiscount(products);
+    $('#discountRow').hidden = discount === 0;
+    $('#tDiscount').textContent = `− ${fmt(discount)}`;
+    const base = products - discount;
     $('#tDelivery').textContent = fee == null ? t('choosePlace') : fmt(fee);
-    $('#tGrand').textContent = fee == null ? fmt(products) : fmt(products + fee);
+    $('#tGrand').textContent = fee == null ? fmt(base) : fmt(base + fee);
+    $('#waOrderBtn').hidden = !state.store.whatsapp || state.cart.size === 0;
 
     const sum = $('#summary');
     sum.replaceChildren();
@@ -593,6 +667,7 @@
           },
           deliveryMethod: fd.get('deliveryMethod'),
           notes: fd.get('notes'),
+          couponCode: (fd.get('couponCode') || '').toString().trim(),
           items,
         },
       });
@@ -600,6 +675,8 @@
       saveCart();
       renderCart();
       state.idempotencyKey = null;
+      state.coupon = null;
+      $('#couponMsg').textContent = '';
       form.reset();
       deliveryOptions = null;
       document.querySelectorAll('.fee').forEach((el) => { el.textContent = '—'; });
@@ -757,7 +834,7 @@
     btn.disabled = true;
     try {
       const image = await readFileAsDataUrl(file);
-      await api('/api/listings', {
+      const created = await api('/api/listings', {
         method: 'POST',
         body: {
           title: fd.get('title'),
@@ -774,6 +851,10 @@
       form.reset();
       msg.className = 'form-msg ok';
       msg.textContent = t('sellOk');
+      if (created && created.manageToken) {
+        $('#manageLink').value = `${location.origin}/manage.html#${created.manageToken}`;
+        $('#manageBox').hidden = false;
+      }
     } catch (err) {
       msg.className = 'form-msg error';
       if (err.status === 429) msg.textContent = t('errRate');
@@ -850,6 +931,16 @@
 
     applyLang();
 
+    // Count one visit per browser session. Failures are ignored: analytics must never break the page.
+    try {
+      if (!sessionStorage.getItem('adz-visit')) {
+        sessionStorage.setItem('adz-visit', '1');
+        fetch('/api/visit', { method: 'POST' }).catch(() => {});
+      }
+    } catch {
+      fetch('/api/visit', { method: 'POST' }).catch(() => {});
+    }
+
     $('#langBtn').addEventListener('click', () => {
       state.lang = state.lang === 'ar' ? 'fr' : 'ar';
       store.set('adz-lang', state.lang);
@@ -870,6 +961,14 @@
     $('#wilayaSelect').addEventListener('change', (e) => loadDelivery(e.target.value));
     document.querySelectorAll('input[name="deliveryMethod"]').forEach((r) => r.addEventListener('change', updateSummary));
     $('#orderForm').addEventListener('submit', submitOrder);
+    $('#applyCoupon').addEventListener('click', applyCoupon);
+    // Enter inside the coupon box must not submit the whole order form.
+    $('#couponInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); } });
+    $('#waOrderBtn').addEventListener('click', whatsappOrder);
+    $('#copyManage').addEventListener('click', async () => {
+      const v = $('#manageLink').value;
+      try { await navigator.clipboard.writeText(v); toast(t('copied')); } catch { $('#manageLink').select(); }
+    });
     $('#trackForm').addEventListener('submit', submitTrack);
     $('#contactForm').addEventListener('submit', submitContact);
     $('#sellForm').addEventListener('submit', submitListing);

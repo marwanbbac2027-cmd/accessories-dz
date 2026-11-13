@@ -26,27 +26,87 @@
   <div id="panel" hidden>
     <div class="admin-bar">
       <h1 class="section-title">لوحة الإدارة</h1>
-      <div class="tabs" role="tablist">
-        <button type="button" role="tab" id="tabListings" aria-selected="true">المنتجات</button>
-        <button type="button" role="tab" id="tabMessages" aria-selected="false">رسائل الزبائن</button>
-      </div>
     </div>
-    <section id="listingsView">
+    <nav class="tabs" role="tablist" aria-label="أقسام الإدارة">
+      <button type="button" role="tab" data-tab="orders" aria-selected="true">الطلبات</button>
+      <button type="button" role="tab" data-tab="review" aria-selected="false">مراجعة المنتجات</button>
+      <button type="button" role="tab" data-tab="products" aria-selected="false">المنتجات</button>
+      <button type="button" role="tab" data-tab="messages" aria-selected="false">الرسائل</button>
+      <button type="button" role="tab" data-tab="coupons" aria-selected="false">الكوبونات</button>
+      <button type="button" role="tab" data-tab="stats" aria-selected="false">الإحصاءات</button>
+      <button type="button" role="tab" data-tab="backup" aria-selected="false">النسخ الاحتياطي</button>
+    </nav>
+
+    <section data-section="orders">
       <div class="admin-bar">
         <label><span class="sr-only">الحالة</span>
-          <select id="statusFilter">
+          <select id="orderStatus"></select>
+        </label>
+        <label><span class="sr-only">بحث</span>
+          <input id="orderQ" type="search" placeholder="رقم الطلب أو الاسم أو الهاتف">
+        </label>
+        <button class="btn btn-ghost" type="button" id="orderSearch">بحث</button>
+      </div>
+      <div id="orderList"></div>
+      <div id="orderDetail" class="acard" hidden></div>
+    </section>
+
+    <section data-section="review" hidden>
+      <div class="admin-bar">
+        <label><span class="sr-only">الحالة</span>
+          <select id="reviewStatus">
             <option value="pending">قيد المراجعة</option>
-            <option value="approved">منشورة</option>
             <option value="rejected">مرفوضة</option>
           </select>
         </label>
-        <button class="btn btn-ghost" type="button" id="refreshBtn">تحديث</button>
+        <button class="btn btn-ghost" type="button" id="reviewRefresh">تحديث</button>
       </div>
-      <div id="listings"></div>
+      <div id="reviewList"></div>
     </section>
-    <section id="messagesView" hidden>
-      <div id="messages"></div>
+
+    <section data-section="products" hidden>
+      <div id="productList"></div>
     </section>
+
+    <section data-section="messages" hidden>
+      <div id="messageList"></div>
+    </section>
+
+    <section data-section="coupons" hidden>
+      <form id="couponForm" class="card-form" novalidate>
+        <h2 class="section-title">كوبون جديد</h2>
+        <label><span>الكود (أحرف وأرقام إنجليزية، 3 على الأقل)</span>
+          <input name="code" maxlength="20" dir="ltr" required>
+        </label>
+        <label><span>نوع الخصم</span>
+          <select name="kind">
+            <option value="percent">نسبة مئوية %</option>
+            <option value="amount">مبلغ ثابت (دج)</option>
+          </select>
+        </label>
+        <label><span>القيمة</span>
+          <input name="value" type="number" min="1" step="1" required dir="ltr">
+        </label>
+        <label><span>عدد مرات الاستعمال الأقصى (اتركه فارغًا لغير محدود)</span>
+          <input name="max_uses" type="number" min="1" step="1" dir="ltr">
+        </label>
+        <button class="btn btn-primary" type="submit">إنشاء الكوبون</button>
+      </form>
+      <div id="couponList"></div>
+    </section>
+
+    <section data-section="stats" hidden>
+      <div id="statsBox"></div>
+    </section>
+
+    <section data-section="backup" hidden>
+      <div class="acard">
+        <h2 class="section-title">نسخة احتياطية لقاعدة البيانات</h2>
+        <p class="muted">تحتوي النسخة على كل الطلبات والمنتجات والرسائل. احفظها في مكان آمن ولا تشاركها مع أحد.</p>
+        <button class="btn btn-primary" type="button" id="backupBtn">تنزيل النسخة الاحتياطية</button>
+      </div>
+    </section>
+
     <p class="form-msg" id="adminMsg" role="status"></p>
   </div>
 </main>

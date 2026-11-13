@@ -19,6 +19,29 @@ Optional environment variables:
 | `STORE_WHATSAPP` | Store WhatsApp number, digits with country code, e.g. `213555000000` |
 | `STORE_PHONE` | Store phone number shown on the call button |
 | `RATE_LIMIT_MAX` | Max order attempts per IP per 10 min (default 10) |
+| `ADMIN_TOKEN` | Secret for the admin page `/admin.html`. Admin is disabled when unset. Set it only in the hosting dashboard. |
+| `STORE_FACEBOOK` / `STORE_INSTAGRAM` / `STORE_TIKTOK` | Optional social links, must start with `https://`. Shown in the footer only when set. |
+| `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` | Optional. Sends a Telegram message for each new order, listing, and buyer message. Both must be set. |
+
+### Admin page
+
+Open `/admin.html` and enter the `ADMIN_TOKEN`. Tabs: orders (status, internal notes, call/WhatsApp), product review (approve/reject sellers' listings), products (edit price, discount, stock; pause or delete), buyer messages, coupons, stats, and a database backup download.
+
+Order status changes: cancelling or rejecting an order returns its stock and coupon use. A cancelled or rejected order cannot be reopened.
+
+### Sellers
+
+A seller submits a product at `#sell`. It stays hidden until approved. The seller receives a private manage link (shown once) at `/manage.html#TOKEN` to change price, discount, stock, and description. Only a hash of the token is stored.
+
+### Limits and privacy
+
+- Each phone number can place at most 3 orders in 24 hours (cancelled and rejected orders are not counted).
+- Legal pages `privacy.html` and `terms.html` are drafts. Review them before relying on them.
+- Delivery fees in `lib/data.js` are placeholders. Set real fees per wilaya.
+
+### Persistence
+
+On Railway, attach a Volume and set `DB_FILE` to a path inside it (for example `/app/data/accessories-dz.db`). Without a Volume, data is lost on redeploy.
 
 ## Before going live
 
