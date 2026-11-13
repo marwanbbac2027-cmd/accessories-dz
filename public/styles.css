@@ -10,6 +10,10 @@
   --danger: #b3261e;
   --ok: #2f6b3f;
   --radius: 14px;
+  --radius-sm: 10px;
+  --field-border: #d6cfbf;
+  --control-h: 44px;
+  --section-y: 64px;
   --shadow: 0 10px 30px rgba(14, 14, 16, 0.08);
   --font: 'Tajawal', 'Inter', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
 }
@@ -25,7 +29,7 @@ body {
   color: var(--ink);
   background: var(--ivory);
   background-color: var(--ivory);
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 [dir="ltr"] body, html[dir="ltr"] body { font-family: 'Inter', var(--font), sans-serif; }
 img, svg { display: block; max-width: 100%; }
@@ -36,7 +40,7 @@ h1, h2, h3 { line-height: 1.25; margin: 0; }
 .wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 16px; }
 .narrow { max-width: 620px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.skip { position: absolute; top: -40px; inset-inline-start: 8px; background: var(--ink); color: var(--paper); padding: 8px 12px; border-radius: 8px; z-index: 100; }
+.skip { position: absolute; top: -200px; inset-inline-start: 8px; background: var(--ink); color: var(--paper); padding: 8px 12px; border-radius: 8px; z-index: 100; }
 .skip:focus { top: 8px; }
 :focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; }
 
@@ -55,10 +59,10 @@ h1, h2, h3 { line-height: 1.25; margin: 0; }
 
 .lang-btn, .cart-btn, .icon-btn {
   background: transparent; border: 1px solid rgba(246, 242, 234, 0.25); color: var(--paper);
-  border-radius: 999px; cursor: pointer; min-height: 40px;
+  border-radius: 999px; cursor: pointer; min-height: var(--control-h);
 }
 .lang-btn { padding: 6px 14px; font-weight: 600; letter-spacing: 0.04em; }
-.cart-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 40px; }
+.cart-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; width: var(--control-h); height: var(--control-h); }
 .cart-btn svg { width: 22px; height: 22px; }
 .cart-count {
   position: absolute; top: -6px; inset-inline-end: -6px; min-width: 20px; height: 20px; padding: 0 5px;
@@ -101,7 +105,8 @@ h1, h2, h3 { line-height: 1.25; margin: 0; }
 .link-btn { background: none; border: 0; padding: 0; color: var(--brass-deep); cursor: pointer; font-weight: 600; margin-bottom: 8px; }
 
 /* Sections */
-.section { padding: 64px 0; }
+.section { padding: var(--section-y) 0; }
+@media (max-width: 719px) { :root { --section-y: 48px; } }
 .section-alt { background: var(--paper); }
 .section-title { font-size: clamp(26px, 4vw, 34px); font-weight: 800; margin-bottom: 20px; }
 .muted { color: var(--muted); }
@@ -124,7 +129,7 @@ h1, h2, h3 { line-height: 1.25; margin: 0; }
 .section-head .section-title { margin-bottom: 0; }
 .search { flex: 1; min-width: 220px; max-width: 360px; }
 .search input {
-  width: 100%; min-height: 46px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper);
+  width: 100%; min-height: 48px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--field-border); background: var(--paper);
 }
 .chips { display: flex; gap: 8px; overflow-x: auto; padding: 14px 0 10px; scrollbar-width: none; }
 .chips::-webkit-scrollbar { display: none; }
@@ -154,12 +159,12 @@ h1, h2, h3 { line-height: 1.25; margin: 0; }
   font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px;
 }
 .badge.out { background: var(--ink); color: var(--paper); }
-.product-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
-.product-name { font-weight: 700; font-size: 16px; line-height: 1.35; margin: 0; }
+.product-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.product-name { font-weight: 700; font-size: 16px; line-height: 1.35; margin: 0; min-height: 2.7em; }
 .price { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-weight: 800; }
 .price .old { color: var(--muted); text-decoration: line-through; font-weight: 500; font-size: 14px; }
 .add-btn {
-  margin-top: auto; min-height: 44px; border-radius: 999px; border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
+  margin-top: auto; min-height: var(--control-h); border-radius: 999px; border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
   font-weight: 700; cursor: pointer;
 }
 .add-btn:hover:not(:disabled) { background: var(--brass); border-color: var(--brass); color: var(--ink); }
@@ -172,7 +177,7 @@ h1, h2, h3 { line-height: 1.25; margin: 0; }
 }
 .card-form label { display: grid; gap: 6px; font-weight: 600; font-size: 15px; }
 .card-form input, .card-form select, .card-form textarea {
-  width: 100%; min-height: 48px; padding: 10px 14px; border-radius: 10px; border: 1px solid #d6cfbf; background: #fff; font-size: 16px; font-weight: 400;
+  width: 100%; min-height: 48px; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--field-border); background: #fff; font-size: 16px; font-weight: 400;
 }
 .card-form textarea { resize: vertical; min-height: 96px; }
 .card-form input:focus, .card-form select:focus, .card-form textarea:focus { border-color: var(--brass); outline: none; box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.25); }
@@ -182,7 +187,7 @@ h1, h2, h3 { line-height: 1.25; margin: 0; }
 @media (min-width: 620px) { .row-2 { grid-template-columns: 1fr 1fr; } }
 .method { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; }
 .method legend { font-weight: 700; margin-bottom: 6px; padding: 0; }
-.radio { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid #d6cfbf; border-radius: 10px; cursor: pointer; font-weight: 500; }
+.radio { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid var(--field-border); border-radius: var(--radius-sm); cursor: pointer; font-weight: 500; }
 .radio:has(input:checked) { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
 .radio input { width: 18px; height: 18px; accent-color: var(--ink); }
 .radio .fee { margin-inline-start: auto; }
@@ -221,7 +226,7 @@ h1, h2, h3 { line-height: 1.25; margin: 0; }
 .empty { text-align: center; color: var(--muted); padding: 40px 10px; }
 
 /* Checkout & confirm */
-.checkout { background: var(--ivory); padding: 40px 0 72px; min-height: 80vh; }
+.checkout { background: var(--ivory); padding: var(--section-y) 0; min-height: 80vh; }
 .check {
   width: 72px; height: 72px; margin: 20px auto; border-radius: 50%; background: var(--ink); color: var(--brass);
   display: grid; place-items: center; font-size: 36px; font-weight: 700;
@@ -278,7 +283,7 @@ h1, h2, h3 { line-height: 1.25; margin: 0; }
     radial-gradient(700px 380px at -10% 110%, rgba(184, 145, 74, 0.14), transparent 60%),
     linear-gradient(180deg, #ffffff 0%, #f6f1e8 100%);
   color: var(--ink);
-  padding: 56px 0 72px;
+  padding: var(--section-y) 0;
   border-bottom: 1px solid #ece3cf;
 }
 .hero-logo { width: min(240px, 62vw); height: auto; border-radius: 14px; margin: 0 0 18px; box-shadow: 0 12px 30px rgba(14, 14, 16, 0.12); }
@@ -322,7 +327,7 @@ h1, h2, h3 { line-height: 1.25; margin: 0; }
 .product-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .visual { position: relative; overflow: hidden; }
 .contact-btn {
-  min-height: 40px; border-radius: 999px; border: 1px solid var(--brass-deep); background: transparent;
+  min-height: var(--control-h); border-radius: 999px; border: 1px solid var(--brass-deep); background: transparent;
   color: var(--brass-deep); font-weight: 700; cursor: pointer; margin-top: 4px;
 }
 .contact-btn:hover { background: var(--brass); color: var(--ink); border-color: var(--brass); }
@@ -342,7 +347,7 @@ dialog#contactDialog .contact-quick { margin-bottom: 14px; }
 .admin-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 18px; }
 .admin-bar select, .admin-bar input { min-height: 44px; border-radius: 10px; border: 1px solid #d6cfbf; padding: 0 12px; background: #fff; font: inherit; }
 .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-.tabs button { min-height: 42px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.tabs button { min-height: var(--control-h); padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font: inherit; font-weight: 700; cursor: pointer; }
 .tabs button[aria-selected="true"] { background: var(--ink); color: var(--brass); border-color: var(--ink); }
 .acard { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; display: grid; gap: 6px; }
 .acard img { width: 100%; max-width: 240px; border-radius: 10px; aspect-ratio: 4 / 5; object-fit: cover; background: #eee; }
@@ -362,11 +367,11 @@ dialog#contactDialog .socials { margin-top: -4px; }
 
 /* Coupon field, manage link, and WhatsApp order button */
 .coupon-row { display: flex; gap: 8px; align-items: center; }
-.coupon-row input { flex: 1; min-width: 0; padding: 12px 14px; border: 1px solid var(--line, #d9d4c7); border-radius: 12px; font: inherit; background: #fff; }
+.coupon-row input { flex: 1; min-width: 0; min-height: 48px; padding: 10px 14px; border: 1px solid var(--field-border); border-radius: var(--radius-sm); font: inherit; background: #fff; }
 .coupon-row .btn { width: auto; white-space: nowrap; }
-.manage-box { margin-top: 12px; padding: 14px; border: 1px dashed var(--brass, #b8914a); border-radius: 14px; background: #fffaf0; display: grid; gap: 8px; }
+.manage-box { margin-top: 12px; padding: 14px; border: 1px dashed var(--brass); border-radius: var(--radius); background: #fffaf0; display: grid; gap: 8px; }
 .manage-box p { margin: 0; }
-#waOrderBtn { margin-top: 8px; background: #25d366; color: #fff; border-color: #25d366; }
+#waOrderBtn { margin-top: 8px; min-height: 48px; background: #25d366; color: #fff; border-color: #25d366; }
 #discountRow span:last-child { color: #1b7f3b; font-weight: 700; }
 
 /* Admin tables and seller manage page */

@@ -192,7 +192,7 @@
       const name = document.createElement('span');
       name.textContent = state.lang === 'ar' ? c.name_ar : c.name_fr;
       const n = document.createElement('span');
-      n.textContent = String(count);
+      if (count > 0) n.textContent = String(count);
       a.append(name, n);
       grid.append(a);
     }
