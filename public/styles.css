@@ -317,3 +317,39 @@ h1, h2, h3 { line-height: 1.25; margin: 0; }
 .site-footer { background: #0e0e10; border-top: 2px solid var(--brass); }
 .site-footer .brand-name { color: var(--brass); }
 .toast { background: var(--ink); color: var(--brass); }
+
+/* ===== Sellers, buyer contact, product photos ===== */
+.product-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.visual { position: relative; overflow: hidden; }
+.contact-btn {
+  min-height: 40px; border-radius: 999px; border: 1px solid var(--brass-deep); background: transparent;
+  color: var(--brass-deep); font-weight: 700; cursor: pointer; margin-top: 4px;
+}
+.contact-btn:hover { background: var(--brass); color: var(--ink); border-color: var(--brass); }
+
+dialog#contactDialog {
+  width: min(460px, calc(100% - 24px)); border: 0; border-radius: var(--radius); padding: 20px;
+  background: var(--ivory); color: var(--ink); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+dialog#contactDialog::backdrop { background: rgba(14, 14, 16, 0.55); }
+.dlg-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dlg-head .section-title { margin: 0; font-size: 22px; }
+dialog#contactDialog p { margin: 8px 0 12px; }
+dialog#contactDialog .contact-quick { margin-bottom: 14px; }
+
+/* Admin page */
+.admin-wrap { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+.admin-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.admin-bar select, .admin-bar input { min-height: 44px; border-radius: 10px; border: 1px solid #d6cfbf; padding: 0 12px; background: #fff; font: inherit; }
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.tabs button { min-height: 42px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--ink); color: var(--brass); border-color: var(--ink); }
+.acard { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; display: grid; gap: 6px; }
+.acard img { width: 100%; max-width: 240px; border-radius: 10px; aspect-ratio: 4 / 5; object-fit: cover; background: #eee; }
+.acard h3 { font-size: 18px; }
+.acard .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.acard .actions button { min-height: 42px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--ink); background: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.acard .actions button.primary { background: var(--ink); color: var(--brass); }
+.acard .actions button.danger { border-color: var(--danger); color: var(--danger); }
+.login-box { max-width: 420px; margin: 40px auto; }
+.login-box input { width: 100%; min-height: 48px; border-radius: 10px; border: 1px solid #d6cfbf; padding: 0 14px; font: inherit; margin: 8px 0 12px; }

@@ -28,6 +28,7 @@
     <nav class="main-nav" aria-label="main">
       <a href="#products" data-i18n="navProducts">المنتجات</a>
       <a href="#categories" data-i18n="navCategories">الفئات</a>
+      <a href="#sell" data-i18n="navSell">بيع منتجك</a>
       <a href="#track" data-i18n="navTrack">تتبع الطلب</a>
       <a href="#contact" data-i18n="navContact">اتصل بنا</a>
     </nav>
@@ -79,6 +80,49 @@
       <div class="chips" id="chips" role="tablist" aria-label="categories filter"></div>
       <p class="status" id="productsStatus" role="status"></p>
       <div class="product-grid" id="productGrid"></div>
+    </div>
+  </section>
+
+  <section class="section" id="sell" aria-labelledby="sellTitle">
+    <div class="wrap narrow">
+      <h2 id="sellTitle" class="section-title" data-i18n="sellTitle">بيع منتجك</h2>
+      <p class="muted" data-i18n="sellLead">أضف منتجك وسيظهر في المتجر بعد مراجعته. سيظهر رقم هاتفك للزبائن ليتواصلوا معك مباشرة.</p>
+      <form id="sellForm" class="card-form" novalidate>
+        <label><span data-i18n="sellTitleLabel">اسم المنتج</span>
+          <input name="title" required maxlength="120">
+        </label>
+        <label><span data-i18n="sellCatLabel">الفئة</span>
+          <select name="category" required id="sellCategory"></select>
+        </label>
+        <div class="row-2">
+          <label><span data-i18n="sellPriceLabel">السعر (دج)</span>
+            <input name="price" required inputmode="numeric" dir="ltr">
+          </label>
+          <label><span data-i18n="sellDiscountLabel">سعر الخصم (اختياري)</span>
+            <input name="discount_price" inputmode="numeric" dir="ltr">
+          </label>
+        </div>
+        <label><span data-i18n="sellStockLabel">الكمية المتوفرة</span>
+          <input name="stock" required inputmode="numeric" dir="ltr" value="1">
+        </label>
+        <label><span data-i18n="sellDescLabel">الوصف</span>
+          <textarea name="description" maxlength="1000" rows="3"></textarea>
+        </label>
+        <label><span data-i18n="sellImageLabel">صورة المنتج (JPG أو PNG أو WEBP، حتى 1 ميغابايت)</span>
+          <input name="image" type="file" accept="image/jpeg,image/png,image/webp" required>
+        </label>
+        <h3 class="form-sub" data-i18n="sellContactHead">معلومات التواصل (تظهر للزبائن)</h3>
+        <div class="row-2">
+          <label><span data-i18n="sellNameLabel">اسمك</span>
+            <input name="seller_name" required maxlength="100" autocomplete="name">
+          </label>
+          <label><span data-i18n="phoneLabel">رقم الهاتف</span>
+            <input name="seller_phone" required inputmode="tel" dir="ltr" placeholder="0551234567">
+          </label>
+        </div>
+        <button class="btn btn-primary" type="submit" id="sellBtn" data-i18n="sellBtn">إرسال المنتج للمراجعة</button>
+        <p class="form-msg" id="sellMsg" role="status"></p>
+      </form>
     </div>
   </section>
 
@@ -219,6 +263,32 @@
     <button class="btn btn-primary" type="button" id="backHome" data-i18n="backHome">العودة للمتجر</button>
   </div>
 </section>
+
+<!-- Seller contact dialog -->
+<dialog id="contactDialog" aria-labelledby="dlgTitle">
+  <div class="dlg-head">
+    <h2 id="dlgTitle" class="section-title"></h2>
+    <button class="icon-btn" type="button" id="dlgClose" aria-label="إغلاق">&times;</button>
+  </div>
+  <p class="muted" id="dlgSeller"></p>
+  <div class="contact-quick">
+    <a class="btn btn-ghost" id="dlgCall" href="#" data-i18n="callBtn">اتصال</a>
+    <a class="btn btn-ghost" id="dlgWa" href="#" target="_blank" rel="noopener" data-i18n="waBtn">واتساب</a>
+  </div>
+  <form id="messageForm" class="card-form" novalidate>
+    <label><span data-i18n="nameLabel">الاسم</span>
+      <input name="name" required maxlength="100" autocomplete="name">
+    </label>
+    <label><span data-i18n="phoneLabel">رقم الهاتف</span>
+      <input name="phone" required maxlength="20" inputmode="tel" dir="ltr">
+    </label>
+    <label><span data-i18n="msgLabel">رسالتك</span>
+      <textarea name="message" required maxlength="1000" rows="3"></textarea>
+    </label>
+    <button class="btn btn-primary" type="submit" data-i18n="sendBtn">إرسال</button>
+    <p class="form-msg" id="messageMsg" role="status"></p>
+  </form>
+</dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 

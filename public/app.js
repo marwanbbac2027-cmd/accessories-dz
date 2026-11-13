@@ -63,6 +63,31 @@
     },
   };
 
+  Object.assign(T.ar, {
+    navSell: 'بيع منتجك', sellTitle: 'بيع منتجك',
+    sellLead: 'أضف منتجك وسيظهر في المتجر بعد مراجعته. سيظهر رقم هاتفك للزبائن ليتواصلوا معك مباشرة.',
+    sellTitleLabel: 'اسم المنتج', sellCatLabel: 'الفئة', sellPriceLabel: 'السعر (دج)', sellDiscountLabel: 'سعر الخصم (اختياري)',
+    sellStockLabel: 'الكمية المتوفرة', sellDescLabel: 'الوصف',
+    sellImageLabel: 'صورة المنتج (JPG أو PNG أو WEBP، حتى 1 ميغابايت)',
+    sellContactHead: 'معلومات التواصل (تظهر للزبائن)', sellNameLabel: 'اسمك',
+    sellBtn: 'إرسال المنتج للمراجعة', sellOk: 'تم استلام المنتج. سيظهر في المتجر بعد المراجعة.',
+    sellImageTooBig: 'حجم الصورة يجب ألا يتجاوز 1 ميغابايت.',
+    contactSeller: 'تواصل مع البائع', sellerLabel: 'البائع:', messageOk: 'تم إرسال رسالتك إلى البائع.',
+    notAvailable: 'غير متاح حاليا.',
+  });
+  Object.assign(T.fr, {
+    navSell: 'Vendre', sellTitle: 'Vendre votre produit',
+    sellLead: 'Ajoutez votre produit. Il apparaîtra dans la boutique après vérification. Votre numéro sera visible pour contacter les clients.',
+    sellTitleLabel: 'Nom du produit', sellCatLabel: 'Catégorie', sellPriceLabel: 'Prix (DA)', sellDiscountLabel: 'Prix promo (optionnel)',
+    sellStockLabel: 'Quantité disponible', sellDescLabel: 'Description',
+    sellImageLabel: 'Photo du produit (JPG, PNG ou WEBP, 1 Mo max)',
+    sellContactHead: 'Coordonnées (visibles par les clients)', sellNameLabel: 'Votre nom',
+    sellBtn: 'Envoyer pour vérification', sellOk: 'Produit reçu. Il apparaîtra après vérification.',
+    sellImageTooBig: 'La photo ne doit pas dépasser 1 Mo.',
+    contactSeller: 'Contacter le vendeur', sellerLabel: 'Vendeur :', messageOk: 'Votre message a été envoyé au vendeur.',
+    notAvailable: 'Indisponible pour le moment.',
+  });
+
   // ---------- State ----------
   const state = {
     lang: 'ar',
@@ -128,6 +153,7 @@
     $('#langBtn').textContent = state.lang === 'ar' ? 'FR' : 'عربي';
     $('#search').setAttribute('dir', state.lang === 'ar' ? 'rtl' : 'ltr');
     populateWilayaSelect();
+    populateSellCategories();
     renderCategories();
     renderChips();
     renderProducts();
@@ -204,7 +230,16 @@
       const visual = document.createElement('div');
       visual.className = 'visual';
       visual.style.setProperty('--tone', p.tone || '#1f2a36');
-      visual.innerHTML = ICON;
+      if (p.image_url) {
+        const img = document.createElement('img');
+        img.src = p.image_url;
+        img.alt = prodName(p);
+        img.loading = 'lazy';
+        img.className = 'product-photo';
+        visual.append(img);
+      } else {
+        visual.innerHTML = ICON;
+      }
       if (p.discount_price != null && p.discount_price < p.price) {
         const b = document.createElement('span');
         b.className = 'badge';
@@ -243,6 +278,14 @@
       add.addEventListener('click', () => addToCart(p.id, add));
 
       body.append(name, price, add);
+      if (p.seller_phone) {
+        const contact = document.createElement('button');
+        contact.type = 'button';
+        contact.className = 'contact-btn';
+        contact.textContent = t('contactSeller');
+        contact.addEventListener('click', () => openContactDialog(p));
+        body.append(contact);
+      }
       card.append(visual, body);
       card.dataset.desc = prodDesc(p);
       card.title = prodDesc(p);
@@ -653,6 +696,120 @@
     toastTimer = setTimeout(() => { el.hidden = true; }, 2200);
   }
 
+  // ---------- Sellers & buyer contact ----------
+  function populateSellCategories() {
+    const sel = $('#sellCategory');
+    if (!sel) return;
+    const current = sel.value;
+    sel.replaceChildren();
+    const ph = document.createElement('option');
+    ph.value = '';
+    ph.textContent = state.lang === 'ar' ? 'اختر الفئة' : 'Choisir une catégorie';
+    sel.append(ph);
+    for (const c of state.categories) {
+      const o = document.createElement('option');
+      o.value = c.slug;
+      o.textContent = state.lang === 'ar' ? c.name_ar : c.name_fr;
+      sel.append(o);
+    }
+    if (current) sel.value = current;
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error(t('errGeneric')));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function submitListing(e) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const msg = $('#sellMsg');
+    msg.className = 'form-msg';
+    msg.textContent = '';
+    const fd = new FormData(form);
+    const file = fd.get('image');
+    if (!file || !file.size) { msg.className = 'form-msg error'; msg.textContent = t('required'); return; }
+    if (file.size > 1024 * 1024) { msg.className = 'form-msg error'; msg.textContent = t('sellImageTooBig'); return; }
+    const btn = $('#sellBtn');
+    btn.disabled = true;
+    try {
+      const image = await readFileAsDataUrl(file);
+      await api('/api/listings', {
+        method: 'POST',
+        body: {
+          title: fd.get('title'),
+          category: fd.get('category'),
+          price: fd.get('price'),
+          discount_price: fd.get('discount_price'),
+          stock: fd.get('stock'),
+          description: fd.get('description'),
+          seller_name: fd.get('seller_name'),
+          seller_phone: fd.get('seller_phone'),
+          image,
+        },
+      });
+      form.reset();
+      msg.className = 'form-msg ok';
+      msg.textContent = t('sellOk');
+    } catch (err) {
+      msg.className = 'form-msg error';
+      if (err.status === 429) msg.textContent = t('errRate');
+      else if (err.field) { msg.textContent = err.message; setFieldError(form, err.field); }
+      else msg.textContent = err.message || t('errGeneric');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  let activeProductId = null;
+  function openContactDialog(p) {
+    activeProductId = p.id;
+    const dlg = $('#contactDialog');
+    $('#dlgTitle').textContent = prodName(p);
+    $('#dlgSeller').textContent = `${t('sellerLabel')} ${p.seller_name || ''}`;
+    const call = $('#dlgCall');
+    const wa = $('#dlgWa');
+    const phone = (p.seller_phone || '').replace(/[^\d]/g, '');
+    call.href = `tel:+${p.seller_wa || phone}`;
+    wa.href = p.seller_wa ? `https://wa.me/${p.seller_wa}` : '#';
+    $('#messageMsg').textContent = '';
+    $('#messageForm').reset();
+    if (typeof dlg.showModal === 'function') dlg.showModal();
+    else dlg.setAttribute('open', '');
+  }
+
+  function closeContactDialog() {
+    const dlg = $('#contactDialog');
+    if (typeof dlg.close === 'function') dlg.close();
+    else dlg.removeAttribute('open');
+  }
+
+  async function submitMessage(e) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const msg = $('#messageMsg');
+    msg.className = 'form-msg';
+    const fd = new FormData(form);
+    try {
+      await api(`/api/products/${activeProductId}/messages`, {
+        method: 'POST',
+        body: { name: fd.get('name'), phone: fd.get('phone'), message: fd.get('message') },
+      });
+      form.reset();
+      msg.className = 'form-msg ok';
+      msg.textContent = t('messageOk');
+    } catch (err) {
+      msg.className = 'form-msg error';
+      if (err.status === 429) msg.textContent = t('errRate');
+      else if (err.status === 404) msg.textContent = t('notAvailable');
+      else msg.textContent = err.message || t('errGeneric');
+    }
+  }
+
   // ---------- Wiring ----------
   async function init() {
     loadCart();
@@ -695,6 +852,10 @@
     $('#orderForm').addEventListener('submit', submitOrder);
     $('#trackForm').addEventListener('submit', submitTrack);
     $('#contactForm').addEventListener('submit', submitContact);
+    $('#sellForm').addEventListener('submit', submitListing);
+    $('#messageForm').addEventListener('submit', submitMessage);
+    $('#dlgClose').addEventListener('click', closeContactDialog);
+    $('#contactDialog').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeContactDialog(); });
   }
 
   document.addEventListener('DOMContentLoaded', init);
