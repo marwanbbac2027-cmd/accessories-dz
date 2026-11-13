@@ -1,0 +1,12 @@
+{
+  "name": "accessories-dz",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ACCESSORIES DZ - Algerian accessories e-commerce (COD, 58 wilayas)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test --no-warnings test/"
+  },
+  "engines": { "node": ">=22.13" }
+}

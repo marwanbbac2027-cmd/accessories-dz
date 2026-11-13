@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ACCESSORIES DZ | إكسسوارات</title>
+  <meta name="description" content="ACCESSORIES DZ، متجر إكسسوارات أنيق يوصل إلى جميع الولايات الجزائرية. الدفع عند الاستلام.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<a class="skip" href="#products" data-i18n="skip">انتقل إلى المنتجات</a>
+
+<header class="site-header">
+  <div class="wrap header-row">
+    <a class="brand" href="#top" aria-label="ACCESSORIES DZ">
+      <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+        <circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="24" y="31" text-anchor="middle" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="currentColor">AD</text>
+      </svg>
+      <span class="brand-name">ACCESSORIES<span class="brand-dz"> DZ</span></span>
+    </a>
+    <nav class="main-nav" aria-label="main">
+      <a href="#products" data-i18n="navProducts">المنتجات</a>
+      <a href="#categories" data-i18n="navCategories">الفئات</a>
+      <a href="#track" data-i18n="navTrack">تتبع الطلب</a>
+      <a href="#contact" data-i18n="navContact">اتصل بنا</a>
+    </nav>
+    <div class="header-actions">
+      <button class="lang-btn" id="langBtn" type="button" aria-label="Changer la langue">FR</button>
+      <button class="cart-btn" id="cartBtn" type="button" aria-label="السلة">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h15l-1.5 9h-12zM6 6 5 3H2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.5" fill="currentColor"/><circle cx="18" cy="20" r="1.5" fill="currentColor"/></svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <p class="eyebrow" data-i18n="heroEyebrow">تشكيلة مختارة بعناية</p>
+      <h1 data-i18n="heroTitle">إكسسوارات تعبّر عنك</h1>
+      <p class="hero-lead" data-i18n="heroLead">ساعات وأساور وقلادات وحقائب بجودة ثابتة وتوصيل إلى جميع الولايات الـ58. ادفع عند الاستلام.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#products" data-i18n="heroShop">تسوق الآن</a>
+        <a class="btn btn-ghost" href="#track" data-i18n="heroTrack">تتبع طلبك</a>
+      </div>
+      <ul class="trust" aria-label="trust">
+        <li data-i18n="trust1">الدفع عند الاستلام</li>
+        <li data-i18n="trust2">توصيل لـ58 ولاية</li>
+        <li data-i18n="trust3">تأكيد الطلب بالهاتف</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" id="categories" aria-labelledby="catTitle">
+    <div class="wrap">
+      <h2 id="catTitle" class="section-title" data-i18n="catTitle">الفئات</h2>
+      <div class="cat-grid" id="catGrid"></div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="products" aria-labelledby="prodTitle">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="prodTitle" class="section-title" data-i18n="prodTitle">المنتجات</h2>
+        <label class="search">
+          <span class="sr-only" data-i18n="searchLabel">ابحث عن منتج</span>
+          <input id="search" type="search" autocomplete="off" data-i18n-placeholder="searchPlaceholder" placeholder="ابحث عن منتج...">
+        </label>
+      </div>
+      <div class="chips" id="chips" role="tablist" aria-label="categories filter"></div>
+      <p class="status" id="productsStatus" role="status"></p>
+      <div class="product-grid" id="productGrid"></div>
+    </div>
+  </section>
+
+  <section class="section" id="track" aria-labelledby="trackTitle">
+    <div class="wrap narrow">
+      <h2 id="trackTitle" class="section-title" data-i18n="trackTitle">تتبع طلبك</h2>
+      <p class="muted" data-i18n="trackLead">أدخل رقم الطلب ورقم الهاتف المستعمل عند الطلب.</p>
+      <form id="trackForm" class="card-form" novalidate>
+        <label><span data-i18n="refLabel">رقم الطلب</span>
+          <input name="reference" required maxlength="20" placeholder="ADZ-XXXX-XXXX" autocomplete="off" dir="ltr">
+        </label>
+        <label><span data-i18n="phoneLabel">رقم الهاتف</span>
+          <input name="phone" required maxlength="20" inputmode="tel" placeholder="0551234567" autocomplete="tel" dir="ltr">
+        </label>
+        <button class="btn btn-primary" type="submit" data-i18n="trackBtn">تتبع</button>
+        <p class="form-msg" id="trackMsg" role="status"></p>
+      </form>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="contact" aria-labelledby="contactTitle">
+    <div class="wrap narrow">
+      <h2 id="contactTitle" class="section-title" data-i18n="contactTitle">اتصل بنا</h2>
+      <div class="contact-quick">
+        <a class="btn btn-ghost" id="waLink" href="#" target="_blank" rel="noopener" data-i18n="waBtn">واتساب</a>
+        <a class="btn btn-ghost" id="callLink" href="#" data-i18n="callBtn">اتصال</a>
+      </div>
+      <form id="contactForm" class="card-form" novalidate>
+        <label><span data-i18n="nameLabel">الاسم</span>
+          <input name="name" required maxlength="100" autocomplete="name">
+        </label>
+        <label><span data-i18n="phoneLabel">رقم الهاتف</span>
+          <input name="phone" required maxlength="20" inputmode="tel" autocomplete="tel" dir="ltr">
+        </label>
+        <label><span data-i18n="msgLabel">رسالتك</span>
+          <textarea name="message" required maxlength="1000" rows="4"></textarea>
+        </label>
+        <button class="btn btn-primary" type="submit" data-i18n="sendBtn">إرسال</button>
+        <p class="form-msg" id="contactMsg" role="status"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-row">
+    <div>
+      <strong class="brand-name">ACCESSORIES DZ</strong>
+      <p class="muted small" data-i18n="footerTag">إكسسوارات جزائرية أنيقة</p>
+    </div>
+    <nav aria-label="legal" class="small">
+      <a href="#" data-i18n="privacy">سياسة الخصوصية</a>
+      <a href="#" data-i18n="terms">الشروط والأحكام</a>
+    </nav>
+    <p class="small muted">&copy; <span id="year"></span> ACCESSORIES DZ</p>
+  </div>
+</footer>
+
+<!-- Cart drawer -->
+<div class="overlay" id="overlay" hidden></div>
+<aside class="drawer" id="cartDrawer" aria-label="السلة" hidden>
+  <div class="drawer-head">
+    <h2 data-i18n="cartTitle">السلة</h2>
+    <button class="icon-btn" type="button" id="closeCart" aria-label="إغلاق">&times;</button>
+  </div>
+  <div class="drawer-body" id="cartItems"></div>
+  <div class="drawer-foot">
+    <div class="sum-row"><span data-i18n="subtotal">المجموع الجزئي</span><strong id="cartSubtotal">0 DA</strong></div>
+    <button class="btn btn-primary btn-block" id="checkoutBtn" type="button" data-i18n="checkout">متابعة الطلب</button>
+  </div>
+</aside>
+
+<!-- Checkout -->
+<section class="checkout" id="checkout" aria-labelledby="checkoutTitle" hidden>
+  <div class="wrap narrow">
+    <button class="link-btn" type="button" id="backToShop" data-i18n="backShop">رجوع للتسوق</button>
+    <h2 id="checkoutTitle" class="section-title" data-i18n="checkoutTitle">إتمام الطلب</h2>
+
+    <div class="summary card-form" id="summary"></div>
+
+    <form id="orderForm" class="card-form" novalidate>
+      <h3 class="form-sub" data-i18n="deliveryInfo">معلومات التوصيل</h3>
+      <div class="row-2">
+        <label><span data-i18n="nameLabel">الاسم واللقب</span>
+          <input name="name" required maxlength="100" autocomplete="name">
+        </label>
+        <label><span data-i18n="phoneLabel">رقم الهاتف</span>
+          <input name="phone" required maxlength="20" inputmode="tel" autocomplete="tel" dir="ltr" placeholder="0551234567">
+        </label>
+      </div>
+      <label><span data-i18n="phone2Label">رقم هاتف ثان (اختياري)</span>
+        <input name="phone2" maxlength="20" inputmode="tel" dir="ltr">
+      </label>
+      <div class="row-2">
+        <label><span data-i18n="wilayaLabel">الولاية</span>
+          <select name="wilaya" required id="wilayaSelect"></select>
+        </label>
+        <label><span data-i18n="communeLabel">البلدية</span>
+          <input name="commune" required maxlength="100">
+        </label>
+      </div>
+      <label><span data-i18n="addressLabel">العنوان الكامل</span>
+        <input name="address" required maxlength="300">
+      </label>
+
+      <fieldset class="method">
+        <legend data-i18n="methodLabel">مكان التوصيل</legend>
+        <label class="radio"><input type="radio" name="deliveryMethod" value="home" checked> <span data-i18n="methodHome">للمنزل</span> <b class="fee" data-fee="home"></b></label>
+        <label class="radio"><input type="radio" name="deliveryMethod" value="pickup"> <span data-i18n="methodPickup">نقطة استلام</span> <b class="fee" data-fee="pickup"></b></label>
+        <p class="form-msg" id="deliveryMsg" role="status"></p>
+      </fieldset>
+
+      <label><span data-i18n="notesLabel">ملاحظات (اختياري)</span>
+        <textarea name="notes" maxlength="500" rows="3"></textarea>
+      </label>
+
+      <div class="totals">
+        <div class="sum-row"><span data-i18n="productsTotal">سعر المنتجات</span><span id="tProducts">0 DA</span></div>
+        <div class="sum-row"><span data-i18n="deliveryTotal">سعر التوصيل</span><span id="tDelivery">—</span></div>
+        <div class="sum-row grand"><span data-i18n="grandTotal">المجموع</span><strong id="tGrand">0 DA</strong></div>
+        <p class="muted small" data-i18n="codNote">الدفع نقدا عند استلام الطلب.</p>
+      </div>
+
+      <button class="btn btn-primary btn-block" type="submit" id="submitBtn" data-i18n="placeOrder">تأكيد الطلب</button>
+      <p class="form-msg" id="orderMsg" role="alert"></p>
+    </form>
+  </div>
+</section>
+
+<!-- Confirmation -->
+<section class="checkout" id="confirm" aria-labelledby="confirmTitle" hidden>
+  <div class="wrap narrow center">
+    <div class="check" aria-hidden="true">&#10003;</div>
+    <h2 id="confirmTitle" class="section-title" data-i18n="confirmTitle">تم استلام طلبك</h2>
+    <p data-i18n="confirmLead">احتفظ برقم الطلب. سنتصل بك لتأكيده.</p>
+    <p class="ref-box"><span data-i18n="yourRef">رقم الطلب:</span> <strong id="confirmRef" dir="ltr"></strong></p>
+    <button class="btn btn-ghost" type="button" id="copyRef" data-i18n="copyRef">نسخ الرقم</button>
+    <button class="btn btn-primary" type="button" id="backHome" data-i18n="backHome">العودة للمتجر</button>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="/app.js"></script>
+</body>
+</html>
