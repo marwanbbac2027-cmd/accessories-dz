@@ -160,6 +160,7 @@
     renderCart();
     updateSummary();
     updateContactLinks();
+    renderSocials($('#socialLinks'));
   }
 
   // ---------- Catalog ----------
@@ -696,6 +697,24 @@
     toastTimer = setTimeout(() => { el.hidden = true; }, 2200);
   }
 
+  // ---------- Social links (shown only when configured) ----------
+  const SOCIAL_LABELS = { facebook: 'Facebook', instagram: 'Instagram', tiktok: 'TikTok' };
+  function renderSocials(container) {
+    if (!container) return;
+    container.replaceChildren();
+    const social = state.store.social || {};
+    for (const key of Object.keys(SOCIAL_LABELS)) {
+      if (!social[key]) continue;
+      const a = document.createElement('a');
+      a.href = social[key];
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = SOCIAL_LABELS[key];
+      container.append(a);
+    }
+    container.hidden = container.children.length === 0;
+  }
+
   // ---------- Sellers & buyer contact ----------
   function populateSellCategories() {
     const sel = $('#sellCategory');
@@ -778,6 +797,7 @@
     wa.href = p.seller_wa ? `https://wa.me/${p.seller_wa}` : '#';
     $('#messageMsg').textContent = '';
     $('#messageForm').reset();
+    renderSocials($('#dlgSocial'));
     if (typeof dlg.showModal === 'function') dlg.showModal();
     else dlg.setAttribute('open', '');
   }
@@ -823,7 +843,7 @@
       state.categories = cats.categories;
       state.products = prods.products;
       state.wilayas = wils.wilayas;
-      state.store = { whatsapp: storeInfo.whatsapp || '', phone: storeInfo.phone || '' };
+      state.store = { whatsapp: storeInfo.whatsapp || '', phone: storeInfo.phone || '', social: storeInfo.social || {} };
     } catch {
       $('#productsStatus').textContent = t('loadError');
     }

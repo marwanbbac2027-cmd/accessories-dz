@@ -147,9 +147,15 @@ function createServer(db) {
     }
     if (req.method === 'GET' && pathname === '/api/store') {
       // Contact details come from environment variables, so they can change without code edits.
+      const httpsOnly = (v) => (typeof v === 'string' && /^https:\/\/[^\s]+$/.test(v) ? v : '');
       return send(res, 200, {
         whatsapp: process.env.STORE_WHATSAPP || '',
         phone: process.env.STORE_PHONE || '',
+        social: {
+          facebook: httpsOnly(process.env.STORE_FACEBOOK),
+          instagram: httpsOnly(process.env.STORE_INSTAGRAM),
+          tiktok: httpsOnly(process.env.STORE_TIKTOK),
+        },
       });
     }
     if (req.method === 'GET' && pathname === '/api/delivery') {
